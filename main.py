@@ -6,7 +6,9 @@ from enums import Keystate
 from mammoth import Mammoth
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, PLAYER_SPEED, TILE_SIZE
 from chunk_manager import ChunkManager
-from noise_generator import NoiseGenerator  # Import the NoiseGenerator class
+from noise_generator import NoiseGenerator
+import spritesheet
+from textures import Textures  # Import the NoiseGenerator class
 
 keystates = {pygame.K_UP: Keystate.UP, pygame.K_DOWN: Keystate.UP, pygame.K_LEFT: Keystate.UP, pygame.K_RIGHT: Keystate.UP}
 mammoths = {}
@@ -46,8 +48,12 @@ pygame.display.set_caption("Endless Map Game")
 # Initialize NoiseGenerator
 noise_generator = NoiseGenerator(seed=42)
 
+# Initialize textures
+sprites = spritesheet.spritesheet('RA_Ground_Tiles.png')
+textures = Textures(sprites)
+
 # Initialize ChunkManager with the noise generator
-chunk_manager = ChunkManager(noise_generator)
+chunk_manager = ChunkManager(noise_generator, textures)
 
 # Load chunks in a 3x3 grid centered at (0, 0)
 initial_chunks = [
@@ -103,6 +109,7 @@ while running:
     chunk_manager.render(screen, camera_position, screen_center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
     
     sorted_mammoths = sort_mammoths()
+
     for mammoth_id in sorted_mammoths:
         screen.blit(mammoths[mammoth_id].get_image(), mammoths[mammoth_id].position + mammoths[mammoth_id].size/2 - camera_position)
 

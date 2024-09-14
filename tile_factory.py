@@ -2,7 +2,6 @@
 
 from grass_tile import GrassTile
 from mud_tile import MudTile
-from noise_generator import NoiseGenerator
 
 class TileFactory:
     grass_threshold = -0.2
