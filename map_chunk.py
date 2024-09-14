@@ -4,11 +4,12 @@ from tile_factory import TileFactory
 from settings import CHUNK_SIZE, TILE_SIZE
 
 class MapChunk:
-    def __init__(self, position, noise_generator):
+    def __init__(self, position, noise_generator, textures):
         self.position = position  # (x, y) coordinates for the chunk
         self.noise_generator = noise_generator
         self.tile_factory = TileFactory(noise_generator)  # Initialize TileFactory with noise generator
         self.tiles = self.generate_tiles()
+        self.textures = textures
 
     def generate_tiles(self):
         # Define noise parameters for this chunk
@@ -39,4 +40,9 @@ class MapChunk:
                 # Calculate screen position relative to camera's centered position
                 screen_x = (chunk_x * CHUNK_SIZE + i) * TILE_SIZE - camera_position[0] + screen_center[0]
                 screen_y = (chunk_y * CHUNK_SIZE + j) * TILE_SIZE - camera_position[1] + screen_center[1]
-                self.tiles[i][j].render(surface, screen_x, screen_y)
+
+                if(self.tiles[i][j].tile_type == "grass"):
+                    surface.blit(self.textures.grass, (screen_x, screen_y))
+                    
+                elif(self.tiles[i][j].tile_type == "mud"):
+                    surface.blit(self.textures.mud, (screen_x, screen_y))
