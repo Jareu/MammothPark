@@ -36,6 +36,7 @@ def sort_mammoths():
     return mammoth_ids
 
 # Initialize Pygame
+pygame.mixer.pre_init(44100, -16, 2, 2048)
 pygame.init()
 
 # Screen setup
@@ -66,6 +67,11 @@ populate_mammoths(20)
 # Main game loop
 running = True
 clock = pygame.time.Clock()
+
+# Play music
+pygame.mixer.music.load('music.mp3')
+pygame.mixer.music.queue('music.mp3', 'mp3', -1)
+pygame.mixer.music.play()
 
 while running:
     # Handle events
