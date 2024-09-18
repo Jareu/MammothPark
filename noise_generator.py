@@ -16,32 +16,26 @@ class NoiseGenerator:
         :param lacunarity: Controls the frequency of each octave.
         """
         self.seed = seed
+        self.noise = OpenSimplex(seed)
         self.default_parameters =  {'scale': 100.0, 'octaves': 1, 'persistence': 0.5, 'lacunarity': 2.0}
-        self.noise = OpenSimplex(seed=self.seed)
 
     def generate_chunk_noise(self, chunk_position, noise_parameters = None):
-        """
-        Generate a 2D array of noise values for a specific chunk.
-
-        :param chunk_position: (x, y) tuple indicating the chunk's world position.
-        :return: 2D numpy array of noise values representing terrain heights.
-        """
         chunk_x, chunk_y = chunk_position
-        noise_array = np.zeros((CHUNK_SIZE, CHUNK_SIZE))
+        if noise_parameters is None:
+            noise_parameters = self.default_parameters
 
-        for i in range(CHUNK_SIZE):
-            for j in range(CHUNK_SIZE):
-                # Convert local chunk coordinates to world coordinates
-                world_x = (chunk_x * CHUNK_SIZE + i) / noise_parameters['scale']
-                world_y = (chunk_y * CHUNK_SIZE + j) / noise_parameters['scale']
+        # Create grid of coordinates
+        x_indices = np.arange(CHUNK_SIZE)
+        y_indices = np.arange(CHUNK_SIZE)
+        x_grid, y_grid = np.meshgrid(x_indices, y_indices, indexing='ij')
 
-                # Generate OpenSimplex noise value for the current world coordinate
-                noise_value = self._generate_octave_noise(world_x, world_y, self.default_parameters if noise_parameters is None else noise_parameters)
-                
-                # Store the noise value in the array
-                noise_array[i][j] = noise_value
+        # Convert to world coordinates
+        world_x = (chunk_x * CHUNK_SIZE + x_grid) / noise_parameters['scale']
+        world_y = (chunk_y * CHUNK_SIZE + y_grid) / noise_parameters['scale']
 
-        return noise_array
+        # Generate noise for the entire chunk
+        noise_values = self._generate_octave_noise(world_x, world_y, noise_parameters)
+        return noise_values
     
     def generate_tile_noise(self, chunk_position, tile_position, noise_parameters = None):
         """
@@ -70,15 +64,24 @@ class NoiseGenerator:
         :param y: Y coordinate in world space.
         :return: Noise value with octaves applied.
         """
-        noise_value = 0
-        frequency = 1
-        amplitude = 1
-        max_value = 0  # Used for normalizing the result to the range [-1, 1]
+        noise_value = np.zeros_like(x)
+        frequency = 1.0
+        amplitude = 1.0
+        max_value = 0.0
 
         for _ in range(parameters['octaves']):
-            noise_value += self.noise.noise2(x * frequency, y * frequency) * amplitude
+            nx = x * frequency
+            ny = y * frequency
+            noise_value += self.vectorized_noise2d(nx, ny) * amplitude
             max_value += amplitude
             amplitude *= parameters['persistence']
             frequency *= parameters['lacunarity']
 
         return noise_value / max_value
+    
+    def vectorized_noise2d(self, x, y):
+        # Vectorized noise function using NumPy arrays
+        flat_x = x.flatten()
+        flat_y = y.flatten()
+        noise_values = np.array([self.noise.noise2(ix, iy) for ix, iy in zip(flat_x, flat_y)])
+        return noise_values.reshape(x.shape)

@@ -1,5 +1,5 @@
 # chunk_manager.py
-
+import threading
 from map_chunk import MapChunk  # Updated import to reflect the new class name
 
 class ChunkManager:
@@ -7,11 +7,17 @@ class ChunkManager:
         self.loaded_chunks = {} 
         self.noise_generator = noise_generator
         self.texture_manager = texture_manager
+        self.chunk_lock = threading.Lock()
 
     def load_chunk(self, position):
         """Load a chunk at the specified position if not already loaded."""
         if position not in self.loaded_chunks:
-            self.loaded_chunks[position] = MapChunk(position, self.noise_generator, self.texture_manager)
+            threading.Thread(target=self._load_chunk_thread, args=(position,)).start()
+            
+    def _load_chunk_thread(self, position):
+        chunk = MapChunk(position, self.noise_generator, self.texture_manager)
+        with self.chunk_lock:
+            self.loaded_chunks[position] = chunk
 
     def unload_chunk(self, position):
         """Unload a chunk at the specified position."""

@@ -9,7 +9,6 @@ from chunk_manager import ChunkManager
 from noise_generator import NoiseGenerator
 import spritesheet
 from texture_manager import TextureManager
-from textures import Textures  # Import the NoiseGenerator class
 
 keystates = {pygame.K_UP: Keystate.UP, pygame.K_DOWN: Keystate.UP, pygame.K_LEFT: Keystate.UP, pygame.K_RIGHT: Keystate.UP}
 mammoths = {}
