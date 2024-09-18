@@ -1,19 +1,17 @@
 # chunk_manager.py
 
-from map_chunk import MapChunk
-import spritesheet  # Updated import to reflect the new class name
+from map_chunk import MapChunk  # Updated import to reflect the new class name
 
 class ChunkManager:
-    def __init__(self, noise_generator, textures):
-        self.loaded_chunks = {}  # Dictionary to hold loaded chunks
-        self.noise_generator = noise_generator  # Store NoiseGenerator instance
-        self.textures = textures
+    def __init__(self, noise_generator, texture_manager):
+        self.loaded_chunks = {} 
+        self.noise_generator = noise_generator
+        self.texture_manager = texture_manager
 
     def load_chunk(self, position):
         """Load a chunk at the specified position if not already loaded."""
         if position not in self.loaded_chunks:
-            # Pass the noise generator when creating a new MapChunk
-            self.loaded_chunks[position] = MapChunk(position, self.noise_generator, self.textures)
+            self.loaded_chunks[position] = MapChunk(position, self.noise_generator, self.texture_manager)
 
     def unload_chunk(self, position):
         """Unload a chunk at the specified position."""

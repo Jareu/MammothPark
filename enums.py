@@ -11,3 +11,4 @@ class Keystate(Enum):
     DOWN_FROM_UP = 2
     UP_FROM_DOWN = 3
     UP = 4
+

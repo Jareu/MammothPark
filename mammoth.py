@@ -1,3 +1,5 @@
+# mammoth.py
+
 import pygame
 import spritesheet
 import random

@@ -1,15 +1,16 @@
 # map_chunk.py
 
+from tile import Tile
 from tile_factory import TileFactory
 from settings import CHUNK_SIZE, TILE_SIZE
+from textures import Variation
 
 class MapChunk:
-    def __init__(self, position, noise_generator, textures):
+    def __init__(self, position, noise_generator, texture_manager):
         self.position = position  # (x, y) coordinates for the chunk
         self.noise_generator = noise_generator
-        self.tile_factory = TileFactory(noise_generator)  # Initialize TileFactory with noise generator
+        self.texture_manager = texture_manager
         self.tiles = self.generate_tiles()
-        self.textures = textures
 
     def generate_tiles(self):
         # Define noise parameters for this chunk
@@ -26,23 +27,23 @@ class MapChunk:
         for i in range(CHUNK_SIZE):
             row = []
             for j in range(CHUNK_SIZE):
-                tile = self.tile_factory.create_tile(self.position, (i, j), noise_parameters)
+                tile_type = self.determine_tile_type((i, j), noise_parameters)
+                tile = Tile(tile_type, (i, j), self.texture_manager)
                 row.append(tile)
             tiles.append(row)
 
         return tiles
-
+    
+    def determine_tile_type(self, tile_position, noise_parameters):
+        noise_value = self.noise_generator.generate_tile_noise(self.position, tile_position, noise_parameters)
+        if noise_value > -0.2:
+            return 'grass'
+        else:
+            return 'mud'
+        
     def render(self, surface, camera_position, screen_center):
         # Render all tiles in this chunk
-        chunk_x, chunk_y = self.position
-        for i in range(CHUNK_SIZE):
-            for j in range(CHUNK_SIZE):
+        for row in self.tiles:
+            for tile in row:
                 # Calculate screen position relative to camera's centered position
-                screen_x = (chunk_x * CHUNK_SIZE + i) * TILE_SIZE - camera_position[0] + screen_center[0]
-                screen_y = (chunk_y * CHUNK_SIZE + j) * TILE_SIZE - camera_position[1] + screen_center[1]
-
-                if(self.tiles[i][j].tile_type == "grass"):
-                    surface.blit(self.textures.grass, (screen_x, screen_y))
-                    
-                elif(self.tiles[i][j].tile_type == "mud"):
-                    surface.blit(self.textures.mud, (screen_x, screen_y))
+                tile.render(surface, self.position, camera_position, screen_center)
