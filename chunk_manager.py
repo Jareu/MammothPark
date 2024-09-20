@@ -13,12 +13,15 @@ class ChunkManager:
         """Load a chunk at the specified position if not already loaded."""
         if position not in self.loaded_chunks:
             threading.Thread(target=self._load_chunk_thread, args=(position,)).start()
-            
+
     def _load_chunk_thread(self, position):
-        chunk = MapChunk(position, self.noise_generator, self.texture_manager)
+        chunk = MapChunk(position, self.noise_generator, self.texture_manager, self)
         with self.chunk_lock:
             self.loaded_chunks[position] = chunk
 
+    def get_chunk(self, position):
+        return self.loaded_chunks.get(position)
+    
     def unload_chunk(self, position):
         """Unload a chunk at the specified position."""
         if position in self.loaded_chunks:
@@ -70,6 +73,7 @@ class ChunkManager:
 
     def render(self, surface, camera_position, screen_center):
         """Render all loaded chunks with the camera position at the center of the screen."""
-        for chunk in self.loaded_chunks.values():
-            # Render each MapChunk with adjusted camera centering
-            chunk.render(surface, camera_position, screen_center)
+        with self.chunk_lock:
+            for chunk in self.loaded_chunks.values():
+                # Render each MapChunk with adjusted camera centering
+                chunk.render(surface, camera_position, screen_center)

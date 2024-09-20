@@ -33,7 +33,13 @@ def main():
 
     # Initialize NoiseGenerator 
     noise_generator = NoiseGenerator(seed=42)
-
+    noise_generator.default_parameters = {
+        'scale': 10.0,
+        'octaves': 2,
+        'persistence': 0.3,
+        'lacunarity': 5.0
+    }
+    
     # Initialize ChunkManager with the noise generator and texture manager
     chunk_manager = ChunkManager(noise_generator, texture_manager)
     # Load chunks in a 3x3 grid centered at (0, 0)
@@ -85,6 +91,7 @@ def main():
 
         # Render chunks
         chunk_manager.render(screen, camera_position, screen_center)
+        
         # Update display
         pygame.display.flip()
         clock.tick(FPS)

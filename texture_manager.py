@@ -4,17 +4,19 @@ import pygame
 from settings import TILE_SIZE
 from spritesheet import SpriteSheet
 from tile_variation import TileVariation
+from tile_type import TileType
 
 class TextureManager:
     texture_offsets = {
+        TileVariation.EMPTY: (0, 0),
         TileVariation.CORNER_INNER_BOTTOM_LEFT: (48, 144),
         TileVariation.CORNER_INNER_BOTTOM_RIGHT: (96, 144),
         TileVariation.CORNER_INNER_TOP_LEFT: (144, 48),
         TileVariation.CORNER_INNER_TOP_RIGHT: (144, 96),
         TileVariation.CORNER_OUTER_BOTTOM_LEFT: (96, 0),
         TileVariation.CORNER_OUTER_BOTTOM_RIGHT: (48, 0),
-        TileVariation.CORNER_OUTER_TOP_LEFT: (96, 0),
-        TileVariation.CORNER_OUTER_TOP_RIGHT: (48, 0),
+        TileVariation.CORNER_OUTER_TOP_LEFT: (0, 96),
+        TileVariation.CORNER_OUTER_TOP_RIGHT: (0, 48),
         TileVariation.DIAGONAL_TOP_LEFT_BOTTOM_RIGHT: (48, 96),
         TileVariation.DIAGONAL_TOP_RIGHT_BOTTOM_LEFT: (96, 48),
         TileVariation.EDGE_LEFT: (48, 48),
@@ -30,17 +32,16 @@ class TextureManager:
 
     def load_textures(self):
         # Load textures for each tile type
-        self.textures['grass'] = {}
-        self.textures['mud'] = {}
+        self.textures[TileType.Grass] = {}
+        self.textures[TileType.Dirt] = {}
 
-        self.textures['mud'][TileVariation.SOLID] = pygame.image.load('textures/mud.png').convert_alpha()
+        self.textures[TileType.Dirt][TileVariation.SOLID] = pygame.image.load('textures/dirt.png').convert_alpha()
 
         grass_sprite = SpriteSheet('textures/grass_sprite.png')
 
         # Load textures for each variation
         for variation in TileVariation:
-
-            self.textures['grass'][variation] = grass_sprite.image_at(
+            self.textures[TileType.Grass][variation] = grass_sprite.image_at(
                 (self.texture_offsets[variation][0], self.texture_offsets[variation][1], TILE_SIZE, TILE_SIZE),
                 (0, 0, 0)
             )

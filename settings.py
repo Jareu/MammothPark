@@ -9,7 +9,7 @@ CHUNK_SIZE = 32 # Size of each chunk in tiles
 
 # Colors
 COLOR_GRASS = (34, 139, 34)
-COLOR_MUD = (139, 69, 19)
+COLOR_DIRT = (139, 69, 19)
 
 # Game settings
 FPS = 60
