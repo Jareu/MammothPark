@@ -1,7 +1,7 @@
 # mammoth.py
 
 import pygame
-import spritesheet
+from spritesheet import SpriteSheet
 import random
 from enums import Direction
 from action import Action, ActionType
@@ -31,7 +31,7 @@ class Mammoth:
             self.current_action = Action(self, idle)
             self.current_action.time_elapsed += random.random() * Action.ACTION_DURATION
         
-        self.spritesheet = spritesheet.spritesheet('mammoth.png')
+        self.spritesheet = SpriteSheet('mammoth.png')
         self.img_down = self.spritesheet.images_at([
             (self.size.x, 0, self.size.x, self.size.y),
             (self.size.x*2, 0, self.size.x, self.size.y),

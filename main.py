@@ -7,7 +7,6 @@ from mammoth import Mammoth
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, PLAYER_SPEED, TILE_SIZE
 from chunk_manager import ChunkManager
 from noise_generator import NoiseGenerator
-import spritesheet
 from texture_manager import TextureManager
 
 keystates = {pygame.K_UP: Keystate.UP, pygame.K_DOWN: Keystate.UP, pygame.K_LEFT: Keystate.UP, pygame.K_RIGHT: Keystate.UP}
@@ -18,7 +17,27 @@ def get_camera_chunk_position(camera_position):
     """Calculate the chunk position based on the camera's pixel position."""
     return camera_position[0] // (32 * TILE_SIZE), camera_position[1] // (32 * TILE_SIZE)
 
+def populate_mammoths(n):
+    for i in range(n):
+        position = pygame.Vector2 (random.random() * SCREEN_WIDTH, random.random() * SCREEN_HEIGHT)
+        new_mammoth = Mammoth(position, False)
+        mammoths[i+1] = new_mammoth
+
+def handle_actors():
+    for mammoth in mammoths.values():
+        mammoth.tick(dt)
+
+def sort_mammoths():
+    mammoth_ys = {}
+
+    for mammoth_id, mammoth in mammoths.items():
+        mammoth_ys[mammoth_id] = mammoth.position.y
+    sorted_mammoths = sorted(mammoth_ys.items(), key=lambda x:x[1])
+    mammoth_ids = list(zip(*sorted_mammoths))[0]
+    return mammoth_ids
+
 def main():
+    global dt
     # Initialize Pygame
     pygame.mixer.pre_init(44100, -16, 2, 2048)
     pygame.init()
@@ -51,8 +70,6 @@ def main():
         chunk_manager.load_chunk(chunk_pos)
 
     # Initialize textures
-    #sprites = spritesheet.spritesheet('RA_Ground_Tiles.png')
-    #textures = Textures(sprites)
 
     running = True
     camera_position = [0, 0]
@@ -62,6 +79,8 @@ def main():
     pygame.mixer.music.load('music.mp3')
     pygame.mixer.music.queue('music.mp3', 'mp3', -1)
     pygame.mixer.music.play()
+
+    populate_mammoths(20)
 
     while running:
         # Handle events
@@ -92,9 +111,17 @@ def main():
         # Render chunks
         chunk_manager.render(screen, camera_position, screen_center)
         
+        sorted_mammoths = sort_mammoths()
+
+        for mammoth_id in sorted_mammoths:
+            screen.blit(mammoths[mammoth_id].get_image(), mammoths[mammoth_id].position + mammoths[mammoth_id].size/2 - camera_position)
+
+        handle_actors()
+
+
         # Update display
         pygame.display.flip()
-        clock.tick(FPS)
+        dt = clock.tick(FPS) / 1000
 
     # Quit Pygame
     pygame.quit()
