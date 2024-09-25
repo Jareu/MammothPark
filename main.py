@@ -11,6 +11,7 @@ from texture_manager import TextureManager
 
 keystates = {pygame.K_UP: Keystate.UP, pygame.K_DOWN: Keystate.UP, pygame.K_LEFT: Keystate.UP, pygame.K_RIGHT: Keystate.UP}
 mammoths = {}
+
 dt = 0
 
 def get_camera_chunk_position(camera_position):

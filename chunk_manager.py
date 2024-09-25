@@ -16,11 +16,22 @@ class ChunkManager:
             print('generating chunk ' + str(position[0]) +  ', ' + str(position[1]))
             threading.Thread(target=self._load_chunk_thread, args=(position,)).start()
 
+    def regen_neighbours(self, position):
+        for x in [-1, 0, 1]:
+            for y in [-1, 0, 1]:
+                if x == y == 0:
+                    continue
+                neighbour_pos = (position[0] + x, position[1] + y)
+                if neighbour_pos in self.loaded_chunks:
+                    self.loaded_chunks[neighbour_pos].regenerate_edges()
+
     def _load_chunk_thread(self, position):
         chunk = MapChunk(position, self.noise_generator, self.texture_manager, self)
 
         with self.chunk_lock:
             self.loaded_chunks[position] = chunk
+        
+        self.regen_neighbours(position)
     
     def get_chunk(self, position):
         return self.loaded_chunks.get(position)

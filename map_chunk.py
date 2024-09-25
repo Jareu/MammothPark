@@ -1,6 +1,6 @@
 # map_chunk.py
 
-from settings import CHUNK_SIZE, TILE_SIZE
+from settings import CHUNK_SIZE, TILE_SIZE, DEBUG
 from tile import Tile
 from tile_variation import TileVariation
 from tile_type import TileType
@@ -13,34 +13,12 @@ class MapChunk:
         self.noise_generator = noise_generator
         self.texture_manager = texture_manager
         self.chunk_manager = chunk_manager  # Reference to ChunkManager to access neighbouring chunks
-        self.get_neighbouring_chunks()
         self.tiles = self.generate_tiles()
         self.display_tiles = self.generate_display_tiles()
-        self.regen_neighbours()
+
         self.font = pygame.font.Font('freesansbold.ttf', 16)
         self.text = self.font.render('[' + str(position[0]) + ',' + str(position[1]) + ']', True, (255,255,0))
         self.text_rect = self.text.get_rect()
-
-    def regen_neighbours(self):
-        for neighbour in self.neighbours:
-            if neighbour is None:
-                print('Chunk ' + str(neighbour[0]) + ', ' + str(neighbour[1]) + 'is null')
-
-        for side, neighbour in neighbours_pos.items():
-            with self.chunk_lock:
-                if neighbour in self.loaded_chunks:
-                    self.loaded_chunks[neighbour].regenerate_edge_display_tiles(side)
-                else:
-                    print('neighbour ' + str(neighbour) + ' not found in ' + str(list(self.loaded_chunks.keys())))
-
-    def get_neighbouring_chunks(self):
-        self.neighbours = {}
-        self.neighbours[(-1, 0)] = self.chunk_manager.get_chunk(self.position + (-1, 0)) # Left
-        self.neighbours[(-1, -1)]= self.chunk_manager.get_chunk(self.position + (-1, -1)) # Top Left
-        self.neighbours[(0, -1)] = self.chunk_manager.get_chunk(self.position + (0, -1)) # Top
-
-        for neighbour in self.neighbours:
-            neighbour.regenerate_edge_display_tiles(side)
 
     def generate_tiles(self):
         # Generate noise and create tiles as before
@@ -76,34 +54,20 @@ class MapChunk:
             display_tiles.append(row)
 
         return display_tiles
-
-    def regenerate_edge_display_tiles(self, side):
-        self.get_neighbouring_chunks()
-        last_tile = CHUNK_SIZE-1
-
-        if side == (0,-1):
-            #print('Regenerating top side')
-            for x in range(CHUNK_SIZE):
-                tile = self.tiles[x][0]
-                self.display_tiles[x][0] = self.determine_display_tile(tile.tile_type, x, 0)
-
-        elif side == Side.Bottom:
-            #print('Regenerating bottom side')
-            for x in range(CHUNK_SIZE):
-                tile = self.tiles[x][last_tile]
-                self.display_tiles[x][last_tile] = self.determine_display_tile(tile.tile_type, x, last_tile)
-
-        elif side == Side.Left:
-            #print('Regenerating left side')
-            for y in range(CHUNK_SIZE):
-                tile = self.tiles[0][y]
-                self.display_tiles[0][y] = self.determine_display_tile(tile.tile_type, 0, y)
     
-        elif side == Side.Right:
-            #print('Regenerating right side')
-            for y in range(CHUNK_SIZE):
-                tile = self.tiles[last_tile][y]
-                self.display_tiles[last_tile][y] = self.determine_display_tile(tile.tile_type, last_tile, y)
+    def regenerate_edges(self):
+        for i in range(CHUNK_SIZE):
+            for j in [0, CHUNK_SIZE-1]:
+                # Top and Bottom
+                tile = self.tiles[i][j]
+                display_tile = self.determine_display_tile(tile.tile_type, i, j)
+                self.display_tiles[i][j] = display_tile
+
+                # Left and Right
+                if(i > 0 and i < CHUNK_SIZE-1): # (skipping top and bottom tiles)
+                    tile = self.tiles[j][i]
+                    display_tile = self.determine_display_tile(tile.tile_type, j, i)
+                    self.display_tiles[j][i] = display_tile
 
     def determine_display_tile(self, type, i, j):
         # Get the types of neighbouring tiles
@@ -128,15 +92,10 @@ class MapChunk:
         else:
             # Neighbour is in another chunk
             neighbour_chunk_pos, local_pos = self.get_neighbour_chunk_and_local_pos(x, y)
-            chunk_offset = (x // CHUNK_SIZE, y // CHUNK_SIZE)
-            neighbour_chunk = self.neighbours[chunk_offset]
+            neighbour_chunk = self.chunk_manager.get_chunk(neighbour_chunk_pos)
 
             if neighbour_chunk:
                 neighbour_tile = neighbour_chunk.tiles[local_pos[0]][local_pos[1]]
-
-                if (self.position[0] == -1 and self.position[1] == 0):
-                    print('x: ' + str(x) + ' y: ' + str(y) + ' ' + str(neighbour_tile.tile_type) + ' chunk_offset: ' + str(chunk_offset))
-
                 return neighbour_tile.tile_type
             else:
                 # print('Neightbour chunk ' + str(neighbour_chunk_pos[0]) +  ', ' + str(neighbour_chunk_pos[1]) + ' doesn\'t exist for chunk ' + str (self.position))
@@ -178,15 +137,16 @@ class MapChunk:
                 texture = self.texture_manager.get_texture(TileType.Grass, TileVariation(display_tile))
                 surface.blit(texture, (screen_x, screen_y))
 
-        chunk_length = CHUNK_SIZE * TILE_SIZE
-        x1 = self.position[0] * chunk_length - camera_position[0] + screen_center[0]
-        x2 = (self.position[0]+1) * chunk_length - camera_position[0] + screen_center[0]
-        y1 = self.position[1] * chunk_length - camera_position[1] + screen_center[1]
-        y2 = (self.position[1]+1) * chunk_length - camera_position[1] + screen_center[1]
+        if (DEBUG == True):
+            chunk_length = CHUNK_SIZE * TILE_SIZE
+            x1 = self.position[0] * chunk_length - camera_position[0] + screen_center[0]
+            x2 = (self.position[0]+1) * chunk_length - camera_position[0] + screen_center[0]
+            y1 = self.position[1] * chunk_length - camera_position[1] + screen_center[1]
+            y2 = (self.position[1]+1) * chunk_length - camera_position[1] + screen_center[1]
 
-        chunk_lines = [(x2, y1), (x1, y1), (x1, y2)]
+            chunk_lines = [(x2, y1), (x1, y1), (x1, y2)]
 
-        pygame.draw.aalines(surface, (255, 255, 0), False, chunk_lines)
-        self.text_rect.x = x1 + TILE_SIZE / 2
-        self.text_rect.y = y1 + TILE_SIZE / 2
-        surface.blit(self.text, self.text_rect)
+            pygame.draw.aalines(surface, (255, 255, 0), False, chunk_lines)
+            self.text_rect.x = x1 + TILE_SIZE / 2
+            self.text_rect.y = y1 + TILE_SIZE / 2
+            surface.blit(self.text, self.text_rect)
