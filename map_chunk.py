@@ -10,6 +10,7 @@ import pygame
 class MapChunk:
     def __init__(self, position, noise_generator, texture_manager, chunk_manager):
         self.position = position
+        self.pixel_position = (self.position[0] * CHUNK_SIZE * TILE_SIZE, self.position[1] * CHUNK_SIZE * TILE_SIZE)
         self.noise_generator = noise_generator
         self.texture_manager = texture_manager
         self.chunk_manager = chunk_manager  # Reference to ChunkManager to access neighbouring chunks
@@ -112,6 +113,9 @@ class MapChunk:
 
     def render(self, surface, camera_position, screen_center):
         # Render all tiles in this chunk
+        screen_offset_x = self.pixel_position[0] - camera_position[0] + screen_center[0]
+        screen_offset_y = self.pixel_position[1] - camera_position[1] + screen_center[1]
+
         for i in range(CHUNK_SIZE):
             for j in range(CHUNK_SIZE):
                 # Calculate screen position relative to camera's centered position
@@ -123,13 +127,13 @@ class MapChunk:
                 display_tile = self.display_tiles[i][j]
 
                 if world_tile.tile_type == TileType.Dirt:
-                    world_tile.render(surface, self.position, camera_position, screen_center)
+                    world_tile.render(surface, (screen_offset_x, screen_offset_y))
 
                 if display_tile == 0:
                     continue
 
-                world_x = (self.position[0] * CHUNK_SIZE + i) * TILE_SIZE - TILE_SIZE * 0.5
-                world_y = (self.position[1] * CHUNK_SIZE + j) * TILE_SIZE - TILE_SIZE * 0.5
+                world_x = self.pixel_position[0] + (i - 0.5) * TILE_SIZE
+                world_y = self.pixel_position[1] + (j - 0.5) * TILE_SIZE
             
                 # Calculate the screen position
                 screen_x = world_x - camera_position[0] + screen_center[0]
