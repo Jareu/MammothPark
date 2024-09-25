@@ -21,4 +21,4 @@ class Tile:
         surface.blit(texture, (screen_x, screen_y))
         
         for item in self.items:
-            item.render(surface, chunk_position, camera_position, screen_center)
+            item.render(surface, screen_offset)
