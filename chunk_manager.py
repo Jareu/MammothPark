@@ -2,10 +2,12 @@
 import threading
 from map_chunk import MapChunk  # Updated import to reflect the new class name
 from side import Side
+from settings import TILE_SIZE
 
 class ChunkManager:
     def __init__(self, noise_generator, texture_manager):
         self.loaded_chunks = {} 
+        self.chunk_camera_position = None
         self.noise_generator = noise_generator
         self.texture_manager = texture_manager
         self.chunk_lock = threading.Lock()
@@ -13,7 +15,6 @@ class ChunkManager:
     def load_chunk(self, position):
         """Load a chunk at the specified position if not already loaded."""
         if position not in self.loaded_chunks:
-            print('generating chunk ' + str(position[0]) +  ', ' + str(position[1]))
             threading.Thread(target=self._load_chunk_thread, args=(position,)).start()
 
     def regen_neighbours(self, position):
@@ -26,6 +27,7 @@ class ChunkManager:
                     self.loaded_chunks[neighbour_pos].regenerate_edges()
 
     def _load_chunk_thread(self, position):
+        print('generating chunk ' + str(position[0]) +  ', ' + str(position[1]))
         chunk = MapChunk(position, self.noise_generator, self.texture_manager, self)
 
         with self.chunk_lock:
@@ -69,21 +71,35 @@ class ChunkManager:
 
         return edge_chunks
 
-    def update_chunks_around_camera(self, camera_chunk_pos):
+    # Determine the current chunk position of the camera
+    def get_camera_chunk_position(self, camera_position):
+        """Calculate the chunk position based on the camera's pixel position."""
+        return camera_position[0] // (32 * TILE_SIZE), camera_position[1] // (32 * TILE_SIZE)
+
+    def update_chunks_around_camera(self, camera_position):
         """
         Ensure a 3x3 grid of chunks is loaded around the camera's current chunk position.
         Dynamically load and unload chunks as needed.
         """
-        cx, cy = camera_chunk_pos
-        # Load new chunks in a 3x3 grid around the camera's current chunk position
-        for x in range(cx - 1, cx + 2):
-            for y in range(cy - 1, cy + 2):
-                self.load_chunk((x, y))
+        chunk_camera_position = self.get_camera_chunk_position(camera_position)
+
+        if chunk_camera_position == self.chunk_camera_position:
+            return
+        
+        self.chunk_camera_position = chunk_camera_position
+        cx, cy = chunk_camera_position
 
         # Unload chunks that are not in the 3x3 grid around the camera
         for pos in self.get_loaded_chunk_positions():
             if abs(pos[0] - cx) > 1 or abs(pos[1] - cy) > 1:
                 self.unload_chunk(pos)
+        
+        # Load new chunks in a 3x3 grid around the camera's current chunk position
+        for x in range(cx - 1, cx + 2):
+            for y in range(cy - 1, cy + 2):
+                self.load_chunk((x, y))
+        
+        print("finished loading")
 
     def render(self, surface, camera_position, screen_center):
         """Render all loaded chunks with the camera position at the center of the screen."""

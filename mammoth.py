@@ -31,7 +31,7 @@ class Mammoth:
             self.current_action = Action(self, idle)
             self.current_action.time_elapsed += random.random() * Action.ACTION_DURATION
         
-        self.spritesheet = SpriteSheet('mammoth.png')
+        self.spritesheet = SpriteSheet('textures/mammoth.png')
         self.img_down = self.spritesheet.images_at([
             (self.size.x, 0, self.size.x, self.size.y),
             (self.size.x*2, 0, self.size.x, self.size.y),
