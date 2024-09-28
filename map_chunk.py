@@ -2,9 +2,9 @@
 
 from settings import CHUNK_SIZE, TILE_SIZE, DEBUG
 from tile import Tile
-from tile_variation import TileVariation
-from tile_type import TileType
-from side import Side
+from enums import TileVariation
+from enums import TileType
+from enums import Side
 import pygame
 
 class MapChunk:

@@ -21,7 +21,7 @@ dt = 0
 def populate_mammoths(n):
     for i in range(n):
         position = pygame.Vector2 (random.random() * SCREEN_WIDTH, random.random() * SCREEN_HEIGHT)
-        new_mammoth = Mammoth(position, False)
+        new_mammoth = Mammoth(position)
         mammoths[i+1] = new_mammoth
 
 def handle_actors():

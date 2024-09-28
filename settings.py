@@ -1,10 +1,10 @@
 # settings.py
 
 # Screen settings
-SCREEN_WIDTH = 1600
-SCREEN_HEIGHT = 1200
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
 
-TILE_SIZE = 48  # Size of each tile in pixels
+TILE_SIZE = 16  # Size of each tile in pixels
 CHUNK_SIZE = 32 # Size of each chunk in tiles
 
 # Colors
