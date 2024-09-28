@@ -1,7 +1,7 @@
 # chunk_manager.py
 import threading
 from map_chunk import MapChunk  # Updated import to reflect the new class name
-from side import Side
+from enums import Side
 from settings import TILE_SIZE
 
 class ChunkManager:

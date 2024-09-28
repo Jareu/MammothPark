@@ -3,8 +3,8 @@
 import pygame
 from settings import TILE_SIZE
 from spritesheet import SpriteSheet
-from tile_variation import TileVariation
-from tile_type import TileType
+from enums import TileVariation
+from enums import TileType
 
 class TextureManager:
     texture_offsets = {
