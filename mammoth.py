@@ -1,19 +1,21 @@
+# mammoth.py
+
 import pygame
-import spritesheet
+from spritesheet import SpriteSheet
 import random
 from enums import Direction
 from action import Action, ActionType
 
-ANIMATION_FPS = 6
+ANIMATION_FPS = 3
 ANIMATION_SPEED = 1/ANIMATION_FPS
 NUM_FRAMES = 4
-CASUAL_SPEED = 100
-PLAYER_SPEED = 200
+CASUAL_SPEED = 30
+PLAYER_SPEED = 60
         
 class Mammoth:
-    size = pygame.Vector2(156,159)
+    size = pygame.Vector2(52, 53)
     
-    def __init__(self, position, controlled):
+    def __init__(self, position, controlled = False):
         self.controlled = controlled
         self.moving = False
         self.direction_vector = pygame.Vector2()
@@ -29,7 +31,7 @@ class Mammoth:
             self.current_action = Action(self, idle)
             self.current_action.time_elapsed += random.random() * Action.ACTION_DURATION
         
-        self.spritesheet = spritesheet.spritesheet('mammoth.png')
+        self.spritesheet = SpriteSheet('textures/mammoth.png')
         self.img_down = self.spritesheet.images_at([
             (self.size.x, 0, self.size.x, self.size.y),
             (self.size.x*2, 0, self.size.x, self.size.y),
